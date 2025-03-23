@@ -244,8 +244,7 @@ int main(int argc, char** argv) {
     
                 char message_send[] = "Daj mi vilicu";
                 MPI_Send(message_send, strlen(message_send) + 1, MPI_CHAR, right_neighbor, 0, MPI_COMM_WORLD);
-                
-               
+                  
             }
 
             //uvlačenje kontrolnog ispisa
@@ -341,10 +340,8 @@ int main(int argc, char** argv) {
 
             }
             
-            seconds = rand() % 3 + 1;
+            seconds = rand() % 2;
             Sleep(seconds * 1000);
-
-            
 
 
         }
