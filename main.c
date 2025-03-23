@@ -178,7 +178,7 @@ int main(int argc, char** argv) {
                             fflush(stdout);
                         }
 
-                    } else if(status.MPI_SOURCE == right_neighbor && next_fork && !prev_fork) {
+                    } else if(status.MPI_SOURCE == right_neighbor && next_fork) {
                         if(next_fork_dirty) {
                             next_fork = FALSE;
                             char message_send[] = "Izvoli vilicu";
@@ -208,50 +208,53 @@ int main(int argc, char** argv) {
             Sleep(1000); //svakih sekundu
         }
 
-
-        //želim jesti, tražim vilice---------------------------------------
     
-        if(!prev_fork) {
-            //uvlačenje kontrolnog ispisa
-            for(int i = 0; i < world_rank; i++) {
-                printf("\t");
-            }
-            //ispis stanja filozofa
-            printf("Proces %d: tražim vilicu (L) (moje vilice: %d, %d)\n", world_rank, prev_fork, next_fork);
-            fflush(stdout);
-
-            char message_send[] = "Daj mi vilicu";
-            MPI_Send(message_send, strlen(message_send) + 1, MPI_CHAR, left_neighbor, 0, MPI_COMM_WORLD);
-
-        }
-
-        if(!next_fork) {
-            //uvlačenje kontrolnog ispisa
-            for(int i = 0; i < world_rank; i++) {
-                printf("\t");
-            }
-
-            //ispis stanja filozofa
-            printf("Proces %d: tražim vilicu (D) (moje vilice: %d, %d)\n", world_rank, prev_fork, next_fork);
-            fflush(stdout);
-
-            char message_send[] = "Daj mi vilicu";
-            MPI_Send(message_send, strlen(message_send) + 1, MPI_CHAR, right_neighbor, 0, MPI_COMM_WORLD);
-
-           
-        }
+        //želim jesti, tražim vilice---------------------------------------
         
         while(!(prev_fork && next_fork)) {
 
-            //last asked varijabla
+            //last asked varijabla: ja sam zadnji pitao za vilicu
+            
 
+            //nitko me nije pitao, smijem ja traziti
+            if(!prev_fork) {
+                //uvlačenje kontrolnog ispisa
+                for(int i = 0; i < world_rank; i++) {
+                    printf("\t");
+                }
+                //ispis stanja filozofa
+                printf("Proces %d: tražim vilicu (L:%d) (moje vilice: %d, %d)\n", world_rank, left_neighbor, prev_fork, next_fork);
+                fflush(stdout);
     
+                char message_send[] = "Daj mi vilicu";
+                MPI_Send(message_send, strlen(message_send) + 1, MPI_CHAR, left_neighbor, 0, MPI_COMM_WORLD);
+                
+            }
+
+        
+            if(!next_fork) {
+                //uvlačenje kontrolnog ispisa
+                for(int i = 0; i < world_rank; i++) {
+                    printf("\t");
+                }
+    
+                //ispis stanja filozofa
+                printf("Proces %d: tražim vilicu (D: %d) (moje vilice: %d, %d)\n", world_rank, right_neighbor, prev_fork, next_fork);
+                fflush(stdout);
+    
+                char message_send[] = "Daj mi vilicu";
+                MPI_Send(message_send, strlen(message_send) + 1, MPI_CHAR, right_neighbor, 0, MPI_COMM_WORLD);
+                
+               
+            }
+
             //uvlačenje kontrolnog ispisa
             for(int i = 0; i < world_rank; i++) {
                 printf("\t");
             }
+
             //provjera pristiglih poruka
-            printf("Proces %d: provjera pristiglih poruka dok tražim vilice (moje vilice: %d, %d)\n", world_rank, prev_fork, next_fork);
+            printf("Proces %d: provjera pristiglih poruka dok čekam vilice (moje vilice: %d, %d)\n", world_rank, prev_fork, next_fork);
             fflush(stdout);
             MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
 
@@ -261,13 +264,13 @@ int main(int argc, char** argv) {
                 char message_recv[100];
                 MPI_Recv(message_recv, sizeof(message_recv), MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
-
-
                 if(strcmp(message_recv, "Izvoli vilicu") == 0) {
+
                     // Ispis o primljenoj poruci
                     for (int i = 0; i < world_rank; i++) {
                         printf("\t");
                     }
+                    
 
                     if(status.MPI_SOURCE == left_neighbor && !prev_fork) { //dobijam vilicu i označujem da je čista
                         prev_fork = TRUE;
@@ -293,37 +296,34 @@ int main(int argc, char** argv) {
                     if(status.MPI_SOURCE == left_neighbor && prev_fork) {
                         if(prev_fork_dirty) { //dajem prljavu vilicu
                             prev_fork = FALSE;
-                            prev_fork_dirty = FALSE;
-                            char message_send[] = "Daj mi vilicu";
+                            char message_send[] = "Izvoli vilicu";
                             MPI_Send(message_send, strlen(message_send) + 1, MPI_CHAR, left_neighbor, 0, MPI_COMM_WORLD);  
                             // Ispis o primljenoj poruci
                             for (int i = 0; i < world_rank; i++) {
                                 printf("\t");
                             }
-                            printf("Proces %d: odgovara na zahtjev za vilicu od procesa %d (%s) (moje vilice: %d, %d)\n", world_rank, status.MPI_SOURCE, (status.MPI_SOURCE == left_neighbor) ? "L" : "D", prev_fork, next_fork);
+                            printf("Proces %d: odgovara na zahtjev za vilicu od procesa %d (L) (moje vilice: %d, %d)\n", world_rank, status.MPI_SOURCE, prev_fork, next_fork);
                             fflush(stdout);
-                        } 
-                        if (status.MPI_SOURCE == right_neighbor)  { //nemam prljavu vilicu pa bilježim zahtjev
+                        } else { //nemam prljavu vilicu pa bilježim zahtjev
                             prev_fork_req = TRUE;
                             // Ispis o primljenoj poruci
                             for (int i = 0; i < world_rank; i++) {
                                 printf("\t");
                             }
-                            printf("Proces %d: bilježi zahtjev za vilicu od procesa %d (%s) (moje vilice: %d, %d)\n", world_rank, status.MPI_SOURCE, (status.MPI_SOURCE == left_neighbor) ? "L" : "D", prev_fork, next_fork);
+                            printf("Proces %d: bilježi zahtjev za vilicu od procesa %d (L) (moje vilice: %d, %d)\n", world_rank, status.MPI_SOURCE, prev_fork, next_fork);
                             fflush(stdout);
                         }
 
-                    } else if(status.MPI_SOURCE == right_neighbor && next_fork && !prev_fork) {
+                    } else if(status.MPI_SOURCE == right_neighbor && next_fork) {
                         if(next_fork_dirty) {
                             next_fork = FALSE;
-                            next_fork_dirty = FALSE;
-                            char message_send[] = "Daj mi vilicu";
-                            MPI_Send(message_send, strlen(message_send) + 1, MPI_CHAR, right_neighbor, 0, MPI_COMM_WORLD); 
+                            char message_send[] = "Izvoli vilicu";
+                            MPI_Send(message_send, strlen(message_send) + 1, MPI_CHAR, right_neighbor, 0, MPI_COMM_WORLD);  
                             // Ispis o primljenoj poruci
                             for (int i = 0; i < world_rank; i++) {
                                 printf("\t");
-                            } 
-                            printf("Proces %d: odgovara na zahtjev za vilicu od procesa %d (%s) (moje vilice: %d, %d)\n", world_rank, status.MPI_SOURCE, (status.MPI_SOURCE == left_neighbor) ? "L" : "D", prev_fork, next_fork);
+                            }
+                            printf("Proces %d: odgovara na zahtjev za vilicu od procesa %d (D) (moje vilice: %d, %d)\n", world_rank, status.MPI_SOURCE, prev_fork, next_fork);
                             fflush(stdout);
                         } else {
                             next_fork_req = TRUE;
@@ -331,7 +331,7 @@ int main(int argc, char** argv) {
                             for (int i = 0; i < world_rank; i++) {
                                 printf("\t");
                             }
-                            printf("Proces %d: bilježi zahtjev za vilicu od procesa %d (%s) (moje vilice: %d, %d)\n", world_rank, status.MPI_SOURCE, (status.MPI_SOURCE == left_neighbor) ? "L" : "D", prev_fork, next_fork);
+                            printf("Proces %d: bilježi zahtjev za vilicu od procesa %d (D) (moje vilice: %d, %d)\n", world_rank, status.MPI_SOURCE, prev_fork, next_fork);
                             fflush(stdout);
                         }
 
@@ -340,8 +340,11 @@ int main(int argc, char** argv) {
                 }
 
             }
+            
+            seconds = rand() % 3 + 1;
+            Sleep(seconds * 1000);
 
-            Sleep(1000);
+            
 
 
         }
