@@ -210,14 +210,15 @@ int main(int argc, char** argv) {
 
     
         //želim jesti, tražim vilice---------------------------------------
-        
+        boolean req_sent_L = FALSE;
+        boolean req_sent_D = FALSE;
         while(!(prev_fork && next_fork)) {
 
             //last asked varijabla: ja sam zadnji pitao za vilicu
             
 
             //nitko me nije pitao, smijem ja traziti
-            if(!prev_fork) {
+            if(!prev_fork && !req_sent_L) {
                 //uvlačenje kontrolnog ispisa
                 for(int i = 0; i < world_rank; i++) {
                     printf("\t");
@@ -228,11 +229,11 @@ int main(int argc, char** argv) {
     
                 char message_send[] = "Daj mi vilicu";
                 MPI_Send(message_send, strlen(message_send) + 1, MPI_CHAR, left_neighbor, 0, MPI_COMM_WORLD);
-                
+                req_sent_L = TRUE;
             }
 
         
-            if(!next_fork) {
+            if(!next_fork && !req_sent_D) {
                 //uvlačenje kontrolnog ispisa
                 for(int i = 0; i < world_rank; i++) {
                     printf("\t");
@@ -244,7 +245,7 @@ int main(int argc, char** argv) {
     
                 char message_send[] = "Daj mi vilicu";
                 MPI_Send(message_send, strlen(message_send) + 1, MPI_CHAR, right_neighbor, 0, MPI_COMM_WORLD);
-                  
+                req_sent_D = TRUE;
             }
 
             //uvlačenje kontrolnog ispisa
