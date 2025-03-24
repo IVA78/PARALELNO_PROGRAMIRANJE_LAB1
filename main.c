@@ -119,7 +119,6 @@ int main(int argc, char** argv) {
             */
 
             MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
-            MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
 
 
             if(flag) { //postoji poruka koju mogu primiti
@@ -258,7 +257,6 @@ int main(int argc, char** argv) {
 
             //provjeravam imam li poruku
            MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
-           MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
 
            if(flag) { //postoji poruka koju mogu primiti
 
@@ -339,10 +337,6 @@ int main(int argc, char** argv) {
             }
 
         }
-            
-            //seconds = rand() % 2;
-            //Sleep(seconds * 1000);
-            Sleep(1000);
 
 
         }
@@ -363,7 +357,7 @@ int main(int argc, char** argv) {
         printf("Proces %d: jedem (moje vilice: %d, %d)\n", world_rank, prev_fork, next_fork);
         
 
-        // odgovaranje na postojeće zahtjeve------------------------
+        // odgovaranje na postojeće zahtjeve--------------------------
         //uvlačenje kontrolnog ispisa
         for(int i = 0; i < world_rank; i++) {
             printf("\t");
